@@ -1,10 +1,10 @@
 <template>
   <div class="create-wrap">
     <button type="button" class="btn btn-info newFile" @click="dialogFormVisible = true">新建md文件</button>
-    <el-dialog title="新建md文件" :visible.sync="dialogFormVisible">
-      <el-form :model="form"  label-width="100px">
-        <el-form-item label="文件名称：">
-          <el-input v-model="form.mdName" auto-complete="off"></el-input>
+    <el-dialog title="新建md文件" width="600px" :visible.sync="dialogFormVisible">
+      <el-form :model="form" :rules="rules" ref="ruleForm" label-width="100px">
+        <el-form-item label="文件名称：" prop="mdName">
+          <el-input v-model="form.mdName" @keyup.enter="newFile()" auto-complete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -14,7 +14,7 @@
     </el-dialog>
     <el-table
       :data="markdownList"
-      style="width: 100%">
+      style="width: 100%;padding:0px 15px;">
       <el-table-column
         label="文件名">
         <template slot-scope="scope">
@@ -35,7 +35,7 @@
         </template>
       </el-table-column>
       <el-table-column label="操作"
-        width="180">
+        width="280">
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -44,6 +44,10 @@
             size="mini"
             type="danger"
             @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+          <el-button
+            size="mini"
+            type="success"
+            @click="handleDownload(scope.$index, scope.row)">下 载</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -53,6 +57,7 @@
 <script>
 import { mapState } from 'vuex'
 import axiosInstance from '../assets/http'
+import config from '../config'
 import '../filters'
 export default {
   name: 'markdownNewFile',
@@ -61,11 +66,16 @@ export default {
       dialogFormVisible: false,
       form: {
         mdName: ''
+      },
+      rules: {
+        mdName: [
+          { required: true, message: '请输入文件名称', trigger: 'blur' }
+        ]
       }
     }
   },
   created () {
-    this.$store.commit('distroyNewFile')
+    this.$store.commit('resetCreateMarkdownResult')
     this.$store.dispatch('queryMarkdownList')
   },
   computed: {
@@ -76,9 +86,15 @@ export default {
   },
   methods: {
     newFile: function () {
-      this.dialogFormVisible = false
-      this.$store.dispatch('createMarkdown', {
-        title: this.form.mdName
+      this.$refs['ruleForm'].validate((valid) => {
+        if (valid) {
+          this.$store.dispatch('createMarkdown', {
+            title: this.form.mdName
+          })
+        } else {
+          console.log('error submit!!')
+          return false
+        }
       })
     },
     handleEdit: function (index, row) {
@@ -87,6 +103,10 @@ export default {
         title: fileName
       })
       this.$router.push({path: '/markdownEditTui'})
+    },
+    handleDownload: function (index, row) {
+      let fileName = row.name
+      window.open(config.baseUrl + '/downMarkdown?fileName=' + fileName)
     },
     handleDelete: function (index, row) {
       let fileName = row.name.substring(0, row.name.lastIndexOf('.'))
@@ -112,8 +132,14 @@ export default {
   watch: {
     createMarkdownResult: {
       handler (newValue, oldValue) {
-        if (newValue) {
+        if (newValue && newValue.success) {
           this.$router.push({path: '/markdownEditTui'})
+        } else {
+          this.$message({
+            showClose: true,
+            type: 'error',
+            message: newValue.message
+          })
         }
       },
       deep: true

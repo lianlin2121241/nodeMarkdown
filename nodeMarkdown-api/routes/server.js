@@ -32,6 +32,8 @@ router.post('/queryMarkdownList', markdownController.queryMarkdownList);
 router.post('/getMarkdownByTitle', markdownController.getMarkdownByTitle);
 //根据title删除文件
 router.post('/deleteMarkdownByTitle', markdownController.deleteMarkdownByTitle);
+//根据文件名下载文件
+router.get('/downMarkdown', markdownController.downMarkdown);
 
 
 module.exports = router;

@@ -2,12 +2,18 @@ var fs = require('fs');
 var path = require('path'); 
 var utils = require('../utils');
 
+var fileBasePath = path.join(path.resolve(__dirname, '../'),'markdownFiles/');
+
 /**
  * @desc 新建md文件
  * @param {object} newFile 
  */
 module.exports.createMarkdown =function(req, res){
     let title = req.body.title;
+    if (existsFileByTitle(title)) {
+        res.json(utils.resultData(false,  null, '已有重名文件'));
+        return;
+    }
     fs.writeFile(path.join(path.resolve(__dirname, '../'),'markdownFiles/'+ title +'.md'), "", function(err) {
         if(err) {
             return console.log(err);
@@ -39,7 +45,6 @@ module.exports.saveMarkdown =function(req, res){
  */
 module.exports.queryMarkdownList =function(req, res){
     let title = req.body.title;
-    var fileBasePath = path.join(path.resolve(__dirname, '../'),'markdownFiles/');
     fs.readdir(fileBasePath, function(err,files){
         if(err) {
             return console.log(err);
@@ -67,7 +72,6 @@ module.exports.queryMarkdownList =function(req, res){
  */
 module.exports.getMarkdownByTitle =function(req, res){
     let title = req.body.title;
-    var fileBasePath = path.join(path.resolve(__dirname, '../'),'markdownFiles/');
     var data = fs.readFileSync(fileBasePath + title +'.md', 'utf8');
     req.flash('success', '成功');
     res.json(utils.resultData(true,  data, ''));
@@ -78,7 +82,6 @@ module.exports.getMarkdownByTitle =function(req, res){
  */
 module.exports.deleteMarkdownByTitle =function(req, res){
     let title = req.body.title;
-    var fileBasePath = path.join(path.resolve(__dirname, '../'),'markdownFiles/');
     if( fs.existsSync(fileBasePath + title +'.md') ) {
         fs.unlinkSync(fileBasePath + title +'.md');
         req.flash('success', '成功');
@@ -86,4 +89,38 @@ module.exports.deleteMarkdownByTitle =function(req, res){
     }else {
         res.json(utils.resultData(false,  '', '无此文件'));
     }
+}
+
+/**
+ * @desc 根据文件名下载文件
+ */
+module.exports.downMarkdown = function(req, res){
+    let fileName = req.query.fileName,
+        currFile = fileBasePath + fileName,
+        fReadStream;
+
+    fs.exists(currFile,function(exist) {
+        if(exist){
+            res.set({
+                "Content-type":"application/octet-stream",
+                "Content-Disposition":"attachment;filename="+encodeURI(fileName)
+            });
+            fReadStream = fs.createReadStream(currFile);
+            fReadStream.on("data",(chunk) => res.write(chunk,"binary"));
+            fReadStream.on("end",function () {
+                res.end();
+            });
+        }else{
+            res.set("Content-type","text/html");
+            res.send("file not exist!");
+            res.end();
+        }
+    });
+}
+
+/**
+ * @desc 根据title判断是否有重名文件
+ */
+function existsFileByTitle (title) {
+    return fs.existsSync(fileBasePath + title +'.md')
 }

@@ -4,10 +4,10 @@ const state = {
   markdown: {
     title: '',
     content: '',
-    saveResult: false
+    saveResult: null
   },
   markdownList: [],
-  createMarkdownResult: false
+  createMarkdownResult: null
 }
 
 const getters = {
@@ -18,8 +18,8 @@ const actions = {
     const responseResult = await markdown.createMarkdown(obj)
     if (responseResult.data.success) {
       commit('setNewMarkdown', obj)
-      commit('createMarkdown', true)
     }
+    commit('createMarkdown', responseResult.data)
   },
   saveMarkdown: async ({ commit, dispatch, state }) => {
     const responseResult = await markdown.saveMarkdown({
@@ -27,14 +27,13 @@ const actions = {
       content: state.markdown.content
     })
     if (responseResult.data.success) {
-      commit('saveMarkdownResult', true)
+      commit('saveMarkdownResult', responseResult.data)
     }
   },
   queryMarkdownList: async ({ commit, dispatch, state }) => {
     const responseResult = await markdown.queryMarkdownList()
     if (responseResult.data.success) {
       commit('setMarkdownList', responseResult.data.data)
-      commit('saveMarkdownResult', true)
     }
   },
   getMarkdownByTitle: async ({ commit, dispatch, state }) => {
@@ -63,11 +62,11 @@ const mutations = {
   setMarkdownList (state, data) {
     state.markdownList = data
   },
-  distroyNewFile (state) {
-    state.createMarkdownResult = false
+  resetCreateMarkdownResult (state) {
+    state.createMarkdownResult = null
   },
   resetMarkdownState (state) {
-    state.markdown.saveResult = false
+    state.markdown.saveResult = null
     state.markdown.content = ''
   }
 }

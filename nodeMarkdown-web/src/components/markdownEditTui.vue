@@ -46,13 +46,19 @@ export default {
   watch: {
     saveResult: {
       handler (newValue, oldValue) {
-        if (newValue) {
+        if (newValue && newValue.success) {
           this.$message({
             showClose: true,
             message: '保存成功',
             type: 'success'
           })
           this.$router.push({path: '/markdownList'})
+        } else {
+          this.$message({
+            showClose: true,
+            type: 'error',
+            message: newValue.message
+          })
         }
       },
       deep: true
