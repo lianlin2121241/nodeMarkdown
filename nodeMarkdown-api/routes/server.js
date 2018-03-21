@@ -3,7 +3,7 @@ var router = express.Router();
 
 var userController = require('../controller/user');
 var todoController = require('../controller/todo');
-var markdownController = require('../controller/markdown');
+var markdownController = require('../controller/markdowndb');
 
 router.all('*', function (req, res, next) {
     let allowOrigins = ['http://localhost:8081', 'http://127.0.0.1:8081', 'http://47.104.96.164'];
@@ -29,9 +29,9 @@ router.post('/saveMarkdown', markdownController.saveMarkdown);
 //query文件
 router.post('/queryMarkdownList', markdownController.queryMarkdownList);
 //根据title获取文件内容
-router.post('/getMarkdownByTitle', markdownController.getMarkdownByTitle);
+router.post('/getMarkdownByTitle', markdownController.getMarkdownById);
 //根据title删除文件
-router.post('/deleteMarkdownByTitle', markdownController.deleteMarkdownByTitle);
+router.post('/deleteMarkdownByTitle', markdownController.deleteMarkdownById);
 //根据文件名下载文件
 router.get('/downMarkdown', markdownController.downMarkdown);
 
