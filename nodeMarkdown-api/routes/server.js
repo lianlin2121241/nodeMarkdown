@@ -2,7 +2,6 @@ var express = require('express');
 var router = express.Router();
 
 var userController = require('../controller/user');
-var todoController = require('../controller/todo');
 var markdownController = require('../controller/markdowndb');
 
 router.all('*', function (req, res, next) {
@@ -22,18 +21,25 @@ router.all('*', function (req, res, next) {
     }
 });
 
+// 注册
+router.post('/reg', userController.reg);
+// 登录
+router.post('/login', userController.login);
+// 登出
+router.post('/logout', userController.logout);
+
 // 新建md文件
-router.post('/createMarkdown', markdownController.createMarkdown);
+router.post('/createMarkdown', userController.isLogin, markdownController.createMarkdown);
 //保存文件
-router.post('/saveMarkdown', markdownController.saveMarkdown);
+router.post('/saveMarkdown', userController.isLogin, markdownController.saveMarkdown);
 //query文件
-router.post('/queryMarkdownList', markdownController.queryMarkdownList);
+router.post('/queryMarkdownList', userController.isLogin, markdownController.queryMarkdownList);
 //根据title获取文件内容
-router.post('/getMarkdownByTitle', markdownController.getMarkdownById);
+router.post('/getMarkdownById', userController.isLogin, markdownController.getMarkdownById);
 //根据title删除文件
-router.post('/deleteMarkdownByTitle', markdownController.deleteMarkdownById);
+router.post('/deleteMarkdownById', userController.isLogin, markdownController.deleteMarkdownById);
 //根据文件名下载文件
-router.get('/downMarkdown', markdownController.downMarkdown);
+router.get('/downMarkdown', userController.isLogin, markdownController.downMarkdown);
 
 
 module.exports = router;
